@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVOO: Training-Free Sparse Attention for Fast Video Generation</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --bg-elevated: #ffffff;
+        --bg-soft: #f1f5f9;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --accent: #0ea5e9;
+        --accent-soft: rgba(14, 165, 233, 0.12);
+        --accent-strong: #0284c7;
+        --danger: #dc2626;
+        --danger-soft: rgba(220, 38, 38, 0.1);
+        --border-subtle: rgba(148, 163, 184, 0.4);
+        --radius-lg: 18px;
+        --radius-xl: 28px;
+        --shadow-soft: 0 10px 40px rgba(30, 41, 59, 0.08);
+        --shadow-strong: 0 20px 50px rgba(30, 41, 59, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Inter", "Segoe UI", sans-serif;
+        background: linear-gradient(160deg, #f0f9ff 0%, #f8fafc 40%, #f1f5f9 100%);
+        color: var(--text-main);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+      }
+
+      .page {
+        max-width: 1120px;
+        width: 100%;
+        padding: 32px 20px 72px;
+      }
+
+      .hero {
+        border-radius: var(--radius-xl);
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 50%, #f0f9ff 100%);
+        padding: 28px 26px 30px;
+        box-shadow: var(--shadow-strong);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: calc(var(--radius-xl) - 1px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        pointer-events: none;
+      }
+
+      .hero-header-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 16px;
+        margin-bottom: 14px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: var(--bg-soft);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: var(--text-muted);
+      }
+
+      .pill-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25);
+      }
+
+      .pill-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        border: 1px solid rgba(14, 165, 233, 0.5);
+        color: var(--accent-strong);
+        background: rgba(14, 165, 233, 0.08);
+      }
+
+      .hero-title {
+        font-size: clamp(22px, 2.8vw, 28px);
+        line-height: 1.35;
+        margin: 0 0 8px;
+        letter-spacing: -0.02em;
+        font-weight: 600;
+      }
+
+      .hero-title-line {
+        display: block;
+        margin-bottom: 0.35em;
+      }
+
+      .hero-title-acronym {
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--accent-strong);
+      }
+
+      .hero-title .u {
+        border-bottom: 2px solid var(--accent-strong);
+        padding-bottom: 1px;
+        font-weight: 700;
+      }
+
+      .hero-subtitle {
+        margin: 10px 0 0;
+        font-size: 14px;
+        color: var(--text-muted);
+        max-width: 720px;
+      }
+
+      .hero-metadata {
+        margin-top: 18px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 18px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .hero-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .hero-meta-label {
+        font-weight: 500;
+        color: var(--text-main);
+      }
+
+      .hero-meta-sep {
+        width: 1px;
+        height: 12px;
+        background: rgba(148, 163, 184, 0.5);
+      }
+
+      .hero-accent-orbit {
+        position: absolute;
+        right: 22px;
+        top: 22px;
+        width: 120px;
+        height: 120px;
+        border-radius: 999px;
+        background: radial-gradient(
+          circle at 50% 20%,
+          rgba(14, 165, 233, 0.15),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+
+      .hero-accent-orbit-inner {
+        position: absolute;
+        inset: 34px;
+        border-radius: 999px;
+        border: 1px dashed rgba(148, 163, 184, 0.4);
+      }
+
+      .hero-accent-badge {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--text-main);
+        background: radial-gradient(circle at 50% 0, rgba(255,255,255,0.6), transparent 60%);
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 8px 24px rgba(30, 41, 59, 0.06);
+      }
+
+      .hero-accent-badge span {
+        color: var(--accent-strong);
+      }
+
+      .content {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+
+      .section {
+        background: var(--bg-elevated);
+        border-radius: var(--radius-lg);
+        padding: 20px 20px 22px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .section-alt {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 50%, #f0f9ff 100%);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 17px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-main);
+      }
+
+      .section-subtitle {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .section-tag {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        background: var(--bg-soft);
+      }
+
+      .abstract-text {
+        margin: 8px 0 0;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text-main);
+      }
+
+      .abstract-text strong {
+        color: var(--text-main);
+      }
+
+      .abstract-inline-acronym {
+        font-weight: 600;
+        color: var(--accent-strong);
+      }
+
+      .abstract-highlight {
+        display: inline-block;
+        padding: 2px 7px;
+        margin: 0 2px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(14, 165, 233, 0.35);
+        font-size: 12px;
+      }
+
+      .abstract-highlight span {
+        color: var(--accent-strong);
+        font-weight: 600;
+      }
+
+      .abstract-key-phrase {
+        color: var(--accent-strong);
+        font-weight: 500;
+      }
+
+      .tradeoff-lead {
+        margin: 6px 0 12px;
+        font-size: 13px;
+        color: var(--text-main);
+        max-width: 720px;
+      }
+
+      .model-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .model-card {
+        background: var(--bg-elevated);
+        border-radius: 16px;
+        padding: 12px 12px 13px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .model-card::before {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        pointer-events: none;
+      }
+
+      .model-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+        background: var(--bg-soft);
+      }
+
+      .model-badge-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .model-title {
+        margin: 0 0 8px;
+        font-size: 14px;
+        color: var(--text-main);
+      }
+
+      .model-title span {
+        color: var(--accent-strong);
+        font-weight: 600;
+      }
+
+      .model-meta {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .method-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .method {
+        background: var(--bg-soft);
+        border-radius: 12px;
+        padding: 7px 7px 8px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .method-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+
+      .method-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-main);
+      }
+
+      .method-chip {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: var(--bg-elevated);
+      }
+
+      .method-chip-ours {
+        border-color: rgba(14, 165, 233, 0.6);
+        color: var(--accent-strong);
+        background: rgba(14, 165, 233, 0.1);
+      }
+
+      .method-chip-baseline {
+        border-color: rgba(220, 38, 38, 0.6);
+        color: var(--danger);
+        background: var(--danger-soft);
+      }
+
+      .method--highlight-dense {
+        background: linear-gradient(145deg, #fef2f2 0%, #fff 100%);
+        border: 2px solid rgba(220, 38, 38, 0.5);
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.08);
+      }
+
+      .method--highlight-svoo {
+        background: linear-gradient(145deg, #ecfeff 0%, #f0f9ff 100%);
+        border: 2px solid rgba(14, 165, 233, 0.5);
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.12);
+      }
+
+      .video-wrapper {
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--bg);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        aspect-ratio: 16 / 9;
+      }
+
+      .video-wrapper video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: black;
+      }
+
+      .video-caption {
+        margin: 4px 6px 5px;
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      .video-caption strong {
+        color: var(--text-main);
+      }
+
+      .footer-note {
+        margin-top: 16px;
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: right;
+      }
+
+      .footer-note span {
+        color: var(--accent-strong);
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          padding: 22px 18px 22px;
+        }
+
+        .hero-accent-orbit {
+          display: none;
+        }
+
+        .section {
+          padding: 18px 14px 19px;
+        }
+
+        .model-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding: 18px 14px 50px;
+        }
+
+        .hero-header-row {
+          align-items: flex-start;
+        }
+
+        .hero-title-main {
+          flex-wrap: wrap;
+        }
+
+        .hero-subtitle {
+          font-size: 13px;
+        }
+
+        .method-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div class="hero-header-row">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span>Video Diffusion · Sparse Attention</span>
+          </div>
+          <div class="pill-badge">Training-Free Method</div>
+        </div>
+
+        <h1 class="hero-title">
+          <span class="hero-title-line">
+            <span class="hero-title-acronym">
+              <span class="u">S</span><span class="u">V</span><span class="u">O</span><span class="u">O</span>
+            </span>: Training-Free <span class="u">S</span>parse Attention for Fast <span class="u">V</span>ideo Generation
+          </span>
+          <span class="hero-title-line">
+            via <span class="u">O</span>ffline Layer-Wise Sparsity Profiling and <span class="u">O</span>nline Bidirectional Co-Clustering
+          </span>
+        </h1>
+
+        <p class="hero-subtitle">
+          A training-free framework that profiles intrinsic per-layer sparsity offline and performs
+          online bidirectional co-clustering during inference, achieving a superior
+          quality–efficiency trade-off for modern video diffusion transformers.
+        </p>
+
+        <div class="hero-metadata">
+          <div class="hero-meta-item">
+            <span class="hero-meta-label">Framework</span>
+            <span class="hero-meta-sep"></span>
+            <span>SVOO · Sparse Video Offline–Online Attention</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="hero-meta-label">Key Result</span>
+            <span class="hero-meta-sep"></span>
+            <span>Up to 1.93× speedup with PSNR up to 29 dB on Wan2.1</span>
+          </div>
+        </div>
+
+        <div class="hero-accent-orbit">
+          <div class="hero-accent-orbit-inner">
+            <div class="hero-accent-badge">
+              <span>Sparse</span>&nbsp;·&nbsp;Video&nbsp;·&nbsp;Attention
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+        <!-- Abstract -->
+        <section id="abstract" class="section">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Abstract</h2>
+              <p class="section-subtitle">
+                Motivation and key idea behind SVOO for efficient video generation.
+              </p>
+            </div>
+            <span class="section-tag">Overview</span>
+          </div>
+
+          <p class="abstract-text">
+            Diffusion Transformers (DiTs) achieve strong video generation quality but suffer from
+            high inference cost due to dense 3D attention, leading to the development of sparse
+            attention technologies to improve efficiency. However, existing training-free sparse
+            attention methods in video generation still face two unresolved limitations:
+            <span class="abstract-key-phrase">ignoring layer heterogeneity in attention pruning</span>
+            and
+            <span class="abstract-key-phrase">ignoring query–key coupling in block partitioning</span>,
+            which hinder a better quality–speedup trade-off. In this work, we uncover a critical
+            insight that
+            <span class="abstract-key-phrase">
+              the attention sparsity of each layer is its intrinsic property, with minor effects
+              across different inputs
+            </span>.
+          </p>
+
+          <p class="abstract-text">
+            Motivated by this, we propose
+            <span class="abstract-inline-acronym">SVOO</span>, a training-free
+            <span class="abstract-highlight"><span>S</span>parse</span> attention
+            framework for fast <span class="abstract-highlight"><span>V</span>ideo</span> generation via
+            <span class="abstract-highlight"><span>O</span>ffline</span> layer-wise sparsity profiling and
+            <span class="abstract-highlight"><span>O</span>nline</span> bidirectional co-clustering. Specifically, SVOO adopts a two-stage paradigm:
+            (i)&nbsp;offline layer-wise sensitivity profiling to derive intrinsic per-layer pruning
+            levels, and (ii)&nbsp;online block-wise sparse attention via a novel bidirectional
+            co-clustering algorithm. Extensive experiments on seven widely used video generation
+            models demonstrate that SVOO achieves a superior quality–speedup trade-off over
+            state-of-the-art methods, delivering up to
+            <strong>1.93×</strong> speedup while maintaining a PSNR of up to <strong>29 dB</strong>
+            on Wan2.1.
+          </p>
+        </section>
+
+        <!-- SVOO achieves better quality-efficiency tradeoff -->
+        <section id="tradeoff" class="section section-alt">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">SVOO achieves better quality-efficiency tradeoff</h2>
+              <p class="section-subtitle">
+                Side-by-side visual comparison across dense and sparse attention baselines.
+              </p>
+            </div>
+            <span class="section-tag">Video Comparisons</span>
+          </div>
+
+          <p class="tradeoff-lead">
+            We compare <strong>Dense Attention</strong>, <strong>SVG1</strong>, <strong>SVG2</strong>
+            and <strong>SVOO (ours)</strong> on four representative video diffusion models.
+            <strong>Dense</strong> serves as the high-quality but expensive baseline, while
+            <strong>SVOO</strong> is highlighted as our method that preserves visual fidelity with
+            significantly improved efficiency.
+          </p>
+
+          <div class="model-grid">
+            <!-- (1) Wan2.1-1.3B-T2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (1)</span>
+              </div>
+              <h3 class="model-title">
+                Wan2.1-1.3B-T2V <span>· Text-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                Comparison under identical prompts and sampling steps.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Baseline</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_DENSE.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · full 3D attention, highest cost.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_SVG1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Sparse baseline · training-free sparse attention.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_SVG2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Improved sparse baseline with stronger pruning.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_SVOO.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · training-free sparse attention with offline profiling
+                      and online co-clustering.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- (2) Wan2.1-14B-T2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (2)</span>
+              </div>
+              <h3 class="model-title">
+                Wan2.1-14B-T2V <span>· Text-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                Large-scale Wan2.1 model with dense and sparse variants.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Baseline</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_14B_T2V_DENSE.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · high-quality but computationally heavy.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_14B_T2V_SVG1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Sparse baseline · reduces attention cost with pruning.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_14B_T2V_SVG2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Strong sparse baseline for Wan2.1-14B.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN21_14B_T2V_SVOO.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · maintains fidelity while accelerating inference.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- (3) Wan2.2-14B-T2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (3)</span>
+              </div>
+              <h3 class="model-title">
+                Wan2.2-14B-T2V <span>· Text-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                Newer Wan2.2 model, showing SVOO generalization to updated architectures.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Baseline</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN22_14B_T2V_DENSE.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · reference quality for Wan2.2-14B.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN22_14B_T2V_SVG1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Sparse baseline for Wan2.2-14B.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN22_14B_T2V_SVG2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Strong sparse baseline for Wan2.2-14B.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_WAN22_14B_T2V_SVOO.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · consistent quality–efficiency gains on Wan2.2.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- (4) HunyuanVideo-T2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (4)</span>
+              </div>
+              <h3 class="model-title">
+                HunyuanVideo-T2V <span>· Text-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                HunyuanVideo model, highlighting SVOO&apos;s robustness across architectures.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Baseline</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_HUNYUAN_T2V_DENSE.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · full attention for HunyuanVideo.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_HUNYUAN_T2V_SVG1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Sparse baseline for HunyuanVideo.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">Sparse</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_HUNYUAN_T2V_SVG2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Strong sparse baseline for HunyuanVideo.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls>
+                      <source
+                        src="videos/REPLACE_WITH_HUNYUAN_T2V_SVOO.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · robust training-free sparse attention on HunyuanVideo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <p class="footer-note">
+            Set the corresponding <span>video paths</span> under
+            <code>reference/website/videos</code> to activate all comparisons.
+          </p>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
