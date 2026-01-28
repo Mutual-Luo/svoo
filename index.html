@@ -240,8 +240,7 @@
       .section-title {
         margin: 0;
         font-size: 17px;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
+        letter-spacing: 0.02em;
         color: var(--text-main);
       }
 
@@ -331,18 +330,7 @@
       }
 
       .model-badge {
-        font-size: 10px;
-        padding: 2px 8px;
-        border-radius: 999px;
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-        border: 1px solid rgba(148, 163, 184, 0.45);
-        color: var(--text-muted);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 6px;
-        background: var(--bg-soft);
+        display: none;
       }
 
       .model-badge-dot {
@@ -353,9 +341,16 @@
       }
 
       .model-title {
-        margin: 0 0 8px;
+        margin: 0 0 10px;
         font-size: 14px;
         color: var(--text-main);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: rgba(241, 245, 249, 0.9);
       }
 
       .model-title span {
@@ -393,7 +388,7 @@
       }
 
       .method-name {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 600;
         color: var(--text-main);
       }
@@ -419,6 +414,48 @@
         border-color: rgba(220, 38, 38, 0.6);
         color: var(--danger);
         background: var(--danger-soft);
+      }
+
+      .method--highlight-dense .method-name {
+        color: var(--danger);
+      }
+
+      .method--highlight-svoo .method-name {
+        color: var(--accent-strong);
+      }
+
+      .model-time-row {
+        display: none;
+      }
+
+      .method-time {
+        margin: 6px 0 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: center;
+        color: var(--text-main);
+      }
+
+      .method-time-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-soft);
+      }
+
+      .method-time-pill-dense {
+        border-color: rgba(220, 38, 38, 0.8);
+        background: var(--danger-soft);
+        color: var(--danger);
+        font-weight: 600;
+      }
+
+      .method-time-pill-ours {
+        border-color: rgba(14, 165, 233, 0.8);
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        font-weight: 600;
       }
 
       .method--highlight-dense {
@@ -554,9 +591,7 @@
 
         <div class="hero-accent-orbit">
           <div class="hero-accent-orbit-inner">
-            <div class="hero-accent-badge">
-              <span>Sparse</span>&nbsp;·&nbsp;Video&nbsp;·&nbsp;Attention
-            </div>
+            <div class="hero-accent-badge"></div>
           </div>
         </div>
       </header>
@@ -587,11 +622,7 @@
             <span class="abstract-key-phrase">
               the attention sparsity of each layer is its intrinsic property, with minor effects
               across different inputs
-            </span>.
-          </p>
-
-          <p class="abstract-text">
-            Motivated by this, we propose
+            </span>. Motivated by this, we propose
             <span class="abstract-inline-acronym">SVOO</span>, a training-free
             <span class="abstract-highlight"><span>S</span>parse</span> attention
             framework for fast <span class="abstract-highlight"><span>V</span>ideo</span> generation via
@@ -611,21 +642,12 @@
         <section id="tradeoff" class="section section-alt">
           <div class="section-header">
             <div>
-              <h2 class="section-title">SVOO achieves better quality-efficiency tradeoff</h2>
-              <p class="section-subtitle">
-                Side-by-side visual comparison across dense and sparse attention baselines.
-              </p>
+              <h2 class="section-title">SVOO achieves better quality–efficiency tradeoff</h2>
             </div>
             <span class="section-tag">Video Comparisons</span>
           </div>
 
-          <p class="tradeoff-lead">
-            We compare <strong>Dense Attention</strong>, <strong>SVG1</strong>, <strong>SVG2</strong>
-            and <strong>SVOO (ours)</strong> on four representative video diffusion models.
-            <strong>Dense</strong> serves as the high-quality but expensive baseline, while
-            <strong>SVOO</strong> is highlighted as our method that preserves visual fidelity with
-            significantly improved efficiency.
-          </p>
+          <!-- description removed per user request -->
 
           <div class="model-grid">
             <!-- (1) Wan2.1-1.3B-T2V -->
@@ -645,12 +667,15 @@
                 <div class="method method--highlight-dense">
                   <div class="method-header">
                     <span class="method-name">Dense Attention</span>
-                    <span class="method-chip method-chip-baseline">Baseline</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 418s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_DENSE.mp4"
+                        src="videos/wan2.1-1.3B-T2V/dense.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -662,15 +687,18 @@
                 </div>
 
                 <!-- SVG1 -->
-                <div class="method">
+                <div class="method method--svg1">
                   <div class="method-header">
                     <span class="method-name">SVG1</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 261s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_SVG1.mp4"
+                        src="videos/wan2.1-1.3B-T2V/svg1.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -682,15 +710,18 @@
                 </div>
 
                 <!-- SVG2 -->
-                <div class="method">
+                <div class="method method--svg2">
                   <div class="method-header">
                     <span class="method-name">SVG2</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 238s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_SVG2.mp4"
+                        src="videos/wan2.1-1.3B-T2V/svg2.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -707,10 +738,13 @@
                     <span class="method-name">SVOO (ours)</span>
                     <span class="method-chip method-chip-ours">Ours</span>
                   </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 213s</span>
+                  </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_1_3B_T2V_SVOO.mp4"
+                        src="videos/wan2.1-1.3B-T2V/svoo.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -741,12 +775,15 @@
                 <div class="method method--highlight-dense">
                   <div class="method-header">
                     <span class="method-name">Dense Attention</span>
-                    <span class="method-chip method-chip-baseline">Baseline</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 1983s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_14B_T2V_DENSE.mp4"
+                        src="videos/wan2.1-14B-T2V/dense.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -758,15 +795,18 @@
                 </div>
 
                 <!-- SVG1 -->
-                <div class="method">
+                <div class="method method--svg1">
                   <div class="method-header">
                     <span class="method-name">SVG1</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1241s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_14B_T2V_SVG1.mp4"
+                        src="videos/wan2.1-14B-T2V/svg1.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -778,15 +818,18 @@
                 </div>
 
                 <!-- SVG2 -->
-                <div class="method">
+                <div class="method method--svg2">
                   <div class="method-header">
                     <span class="method-name">SVG2</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1264s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_14B_T2V_SVG2.mp4"
+                        src="videos/wan2.1-14B-T2V/svg2.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -803,10 +846,13 @@
                     <span class="method-name">SVOO (ours)</span>
                     <span class="method-chip method-chip-ours">Ours</span>
                   </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 1200s</span>
+                  </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN21_14B_T2V_SVOO.mp4"
+                        src="videos/wan2.1-14B-T2V/svoo.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -836,12 +882,15 @@
                 <div class="method method--highlight-dense">
                   <div class="method-header">
                     <span class="method-name">Dense Attention</span>
-                    <span class="method-chip method-chip-baseline">Baseline</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 1608s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN22_14B_T2V_DENSE.mp4"
+                        src="videos/wan2.2-A14B-T2V/dense.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -853,15 +902,18 @@
                 </div>
 
                 <!-- SVG1 -->
-                <div class="method">
+                <div class="method method--svg1">
                   <div class="method-header">
                     <span class="method-name">SVG1</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1047s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN22_14B_T2V_SVG1.mp4"
+                        src="videos/wan2.2-A14B-T2V/svg1.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -873,15 +925,18 @@
                 </div>
 
                 <!-- SVG2 -->
-                <div class="method">
+                <div class="method method--svg2">
                   <div class="method-header">
                     <span class="method-name">SVG2</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1061s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN22_14B_T2V_SVG2.mp4"
+                        src="videos/wan2.2-A14B-T2V/svg2.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -898,10 +953,13 @@
                     <span class="method-name">SVOO (ours)</span>
                     <span class="method-chip method-chip-ours">Ours</span>
                   </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 988s</span>
+                  </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_WAN22_14B_T2V_SVOO.mp4"
+                        src="videos/wan2.2-A14B-T2V/svoo.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -931,12 +989,15 @@
                 <div class="method method--highlight-dense">
                   <div class="method-header">
                     <span class="method-name">Dense Attention</span>
-                    <span class="method-chip method-chip-baseline">Baseline</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 1780s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_HUNYUAN_T2V_DENSE.mp4"
+                        src="videos/hunyuanvideo-T2V/dense.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -948,15 +1009,18 @@
                 </div>
 
                 <!-- SVG1 -->
-                <div class="method">
+                <div class="method method--svg1">
                   <div class="method-header">
                     <span class="method-name">SVG1</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 899s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_HUNYUAN_T2V_SVG1.mp4"
+                        src="videos/hunyuanvideo-T2V/svg1.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -968,15 +1032,18 @@
                 </div>
 
                 <!-- SVG2 -->
-                <div class="method">
+                <div class="method method--svg2">
                   <div class="method-header">
                     <span class="method-name">SVG2</span>
-                    <span class="method-chip">Sparse</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 912s</span>
                   </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_HUNYUAN_T2V_SVG2.mp4"
+                        src="videos/hunyuanvideo-T2V/svg2.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -993,10 +1060,13 @@
                     <span class="method-name">SVOO (ours)</span>
                     <span class="method-chip method-chip-ours">Ours</span>
                   </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 825s</span>
+                  </div>
                   <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay muted loop playsinline>
                       <source
-                        src="videos/REPLACE_WITH_HUNYUAN_T2V_SVOO.mp4"
+                        src="videos/hunyuanvideo-T2V/svoo.mp4"
                         type="video/mp4"
                       />
                       Your browser does not support the video tag.
@@ -1008,12 +1078,330 @@
                 </div>
               </div>
             </article>
+
+            <!-- (5) Wan2.1-14B-I2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (5)</span>
+              </div>
+              <h3 class="model-title">
+                Wan2.1-14B-I2V <span>· Image-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                Wan2.1-14B model evaluated on Image-to-Video generation.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 1660s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.1-14B-I2V/dense.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · full 3D attention for I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method method--svg1">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1051s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.1-14B-I2V/svg1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      SOTA sparse baseline for I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method method--svg2">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1100s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.1-14B-I2V/svg2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Strong sparse baseline for Wan2.1-14B I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 958s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.1-14B-I2V/svoo.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · sparse attention for fast I2V on Wan2.1-14B.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- (6) Wan2.2-14B-I2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (6)</span>
+              </div>
+              <h3 class="model-title">
+                Wan2.2-14B-I2V <span>· Image-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                Wan2.2-14B model, demonstrating SVOO generalization to I2V.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 1608s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.2-A14B-I2V/dense.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · full 3D attention for Wan2.2-14B I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method method--svg1">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1031s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.2-A14B-I2V/svg1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      SOTA sparse baseline for Wan2.2-14B I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method method--svg2">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 1057s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.2-A14B-I2V/svg2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Strong sparse baseline for Wan2.2-14B I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 992s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/wan2.2-A14B-I2V/svoo.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · quality–efficiency gains on Wan2.2-14B I2V.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- (7) HunyuanVideo-I2V -->
+            <article class="model-card">
+              <div class="model-badge">
+                <span class="model-badge-dot"></span>
+                <span>Model (7)</span>
+              </div>
+              <h3 class="model-title">
+                HunyuanVideo-I2V <span>· Image-to-Video</span>
+              </h3>
+              <p class="model-meta">
+                HunyuanVideo model on Image-to-Video, showing SVOO robustness.
+              </p>
+              <div class="method-grid">
+                <!-- Dense Attention -->
+                <div class="method method--highlight-dense">
+                  <div class="method-header">
+                    <span class="method-name">Dense Attention</span>
+                    <span class="method-chip method-chip-baseline">Ground Truth</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-dense">Generation time: 1759s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/hunyuanvideo-I2V/dense.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>Dense baseline</strong> · full attention for HunyuanVideo I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG1 -->
+                <div class="method method--svg1">
+                  <div class="method-header">
+                    <span class="method-name">SVG1</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 889s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/hunyuanvideo-I2V/svg1.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      SOTA sparse baseline for HunyuanVideo I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVG2 -->
+                <div class="method method--svg2">
+                  <div class="method-header">
+                    <span class="method-name">SVG2</span>
+                    <span class="method-chip">SOTA Baseline</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill">Generation time: 888s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/hunyuanvideo-I2V/svg2.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      Strong sparse baseline for HunyuanVideo I2V.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- SVOO -->
+                <div class="method method--highlight-svoo">
+                  <div class="method-header">
+                    <span class="method-name">SVOO (ours)</span>
+                    <span class="method-chip method-chip-ours">Ours</span>
+                  </div>
+                  <div class="method-time">
+                    <span class="method-time-pill method-time-pill-ours">Generation time: 812s</span>
+                  </div>
+                  <div class="video-wrapper">
+                    <video controls autoplay muted loop playsinline>
+                      <source
+                        src="videos/hunyuanvideo-I2V/svoo.mp4"
+                        type="video/mp4"
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                    <p class="video-caption">
+                      <strong>SVOO</strong> · robust training-free sparse attention on HunyuanVideo I2V.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
           </div>
 
-          <p class="footer-note">
-            Set the corresponding <span>video paths</span> under
-            <code>reference/website/videos</code> to activate all comparisons.
-          </p>
+          
         </section>
       </section>
     </main>
